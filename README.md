@@ -4,7 +4,7 @@ This contribution contains the MoBi implementation of a mechanistic physiologica
 
 In this model, the lung is separated into the extrathoracic region and 24 lung generations (or sections) that each consist of concentric layers: epithelial lining fluid, epithelium, and subepithelium. The model allows for absorption of particles in the lung as well as oral absorption of particles in the extrathoracic region.
 
-Using MoBi and the ospsuite R package, the user enters parameters describing the physicochemical properties of the molecule (e.g. molecular weight, solubility, etc), the micro-constants pertaining to the two-compartment model (e.g. elimination rate, volume of central compartmnet, rate of transfer from central compartment to peripheral compartment, etc.) ,  bioavailability (oral and inhalation), particle size distribution (mean, SD), and dose.
+Using MoBi and the ospsuite R package, the user enters parameters describing the physicochemical properties of the molecule (e.g. molecular weight, solubility, etc), the micro-constants pertaining to the two-compartment model (e.g. elimination rate, volume of central compartmnet, rate of transfer from central compartment to peripheral compartment, etc.) ,  oral bioavailability, particle size distribution (mean, SD), and dose.
 
 Simulation of the model returns:
 
