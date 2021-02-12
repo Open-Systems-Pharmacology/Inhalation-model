@@ -11,7 +11,7 @@
 #   - save the simulation
 #
 # NOTE:
-#   - the number of bins (or particle sizes) and the molecule name should match what is in the MoBi pkml file
+#   - the number of bins (or particle diameters) and the molecule name should match what is in the MoBi pkml file
 #
 # TIPS:
 #   - getSimulationTree() to get proper file path
@@ -19,7 +19,7 @@
 #
 ####################
 
-populate_model <- function(pkml_file, molecule_name, particle_sizes_dm, mean_particle_sizes_dm, sd_particle_sizes_dm, logScale = FALSE,
+populate_model <- function(pkml_file, molecule_name, particle_diameters_dm, mean_particle_diameters_dm, sd_particle_diameters_dm, logScale = FALSE,
                            breathing_frequency = 15, fraction_inspiratory = 0.5, breath_hold_time_sec = 0,
                            delay_volume_mL = 0, tidal_volume_mL = 1000, bolus_volume_mL = 1000) {
     
@@ -31,20 +31,20 @@ populate_model <- function(pkml_file, molecule_name, particle_sizes_dm, mean_par
     sim <- loadSimulation(pkml_file)
     
     ### PARAMETERS: Define arguments for deposition function ###
-    # particle_sizes_dm <- c(2.1e-5)      #c(1.35e-5, 2.1e-5, 2.85e-5)    #c(4e-5, 1e-4, 1.6e-4)
-    # mean_particle_sizes_dm <- 2.1e-5    #1e-4
-    # sd_particle_sizes_dm <- 0.75e-5     #3e-5
+    # particle_diameters_dm <- c(2.1e-5)      #c(1.35e-5, 2.1e-5, 2.85e-5)    #c(4e-5, 1e-4, 1.6e-4)
+    # mean_particle_diameters_dm <- 2.1e-5    #1e-4
+    # sd_particle_diameters_dm <- 0.75e-5     #3e-5
     # logScale <- FALSE
     # molecule_name <- "Salbutamol"
     
     # initialization
-    numberOfBins <- length(particle_sizes_dm)
+    numberOfBins <- length(particle_diameters_dm)
     # read in drug density from simulation
     density_kg_dm3 <- getParameter(paste(molecule_name, "|Density (drug)", sep=""), sim)
     drug_density_kg_m3 <- density_kg_dm3$value*1000
     
     # calculate deposition fractions
-    deposition_output <- deposition_interface(particle_sizes_dm, mean_particle_sizes_dm, sd_particle_sizes_dm, drug_density_kg_m3, logScale,
+    deposition_output <- deposition_interface(particle_diameters_dm, mean_particle_diameters_dm, sd_particle_diameters_dm, drug_density_kg_m3, logScale,
                                               breathing_frequency, fraction_inspiratory, breath_hold_time_sec, delay_volume_mL, tidal_volume_mL, bolus_volume_mL)
     # reduce amount deposited by fraction deposited in lung
     # should it also include ET region? or just lung? depends on assumptions and what F_inh represents
@@ -57,7 +57,7 @@ populate_model <- function(pkml_file, molecule_name, particle_sizes_dm, mean_par
               toString(bin), "|Particle radius (at t=0)", sep="")
         paths <- c(paths, temp)
     }
-    setParameterValuesByPath(paths, particle_sizes_dm, sim)
+    setParameterValuesByPath(paths, particle_diameters_dm, sim)
     
     # set Number_Of_Particles_Factor
     paths <- NULL
@@ -138,19 +138,19 @@ populate_model <- function(pkml_file, molecule_name, particle_sizes_dm, mean_par
 # v2:           September 30, 2020
 #   - if statement added so that beta is in proper format for case of 1 particle bin
 #
-# This script will calculate the number of particles per L of drug volume, the pdf_particles over the sizes and 24 generations,
-# as well as the distribution over the generations for each particle size.
+# This script will calculate the number of particles per L of drug volume, the pdf_particles over the diameters and 24 generations,
+# as well as the distribution over the generations for each particle diameter.
 #
 #####
 
-deposition_interface <- function(particle_sizes_dm, mean_particle_size_dm, sd_particle_size_dm, drug_density_kg_m3, log_flag=FALSE,
+deposition_interface <- function(particle_diameters_dm, mean_particle_diameter_dm, sd_particle_diameter_dm, drug_density_kg_m3, log_flag=FALSE,
                                  breathing_frequency, fraction_inspiratory, breath_hold_time_sec,
                                  delay_volume_mL, tidal_volume_mL, bolus_volume_mL){
     library(pracma)
     
-    #particle_sizes_dm <- c(10^(-9:-5))
-    #mean_particle_size <- 1.5e-6
-    #sd_particle_size <- 6e-7
+    #particle_diameters_dm <- c(10^(-9:-5))
+    #mean_particle_diameter <- 1.5e-6
+    #sd_particle_diameter <- 6e-7
     
     ## Parameters
     breath_f_br <- breathing_frequency       # breathing frequency, [1/min]
@@ -158,7 +158,7 @@ deposition_interface <- function(particle_sizes_dm, mean_particle_size_dm, sd_pa
     breath_t_b <- breath_hold_time_sec       # breath-hold time [s]
     
     numGens <- 24
-    numSizes <- length(particle_sizes_dm)
+    numSizes <- length(particle_diameters_dm)
     
     breath_V_D <- delay_volume_mL                   # Delay volume [mL] 
     breath_V_T <- tidal_volume_mL                   # Tidal volume [mL]  
@@ -196,8 +196,8 @@ deposition_interface <- function(particle_sizes_dm, mean_particle_size_dm, sd_pa
     DIF_exp <- matrix(0, nrow=numGens, ncol=numSizes)
     DIF_b <- matrix(0, nrow=numGens, ncol=numSizes)
     
-    particle_sizes_m <- particle_sizes_dm/10
-    particle_radius_dm <- particle_sizes_dm/2
+    particle_diameters_m <- particle_diameters_dm/10
+    particle_radius_dm <- particle_diameters_dm/2
     
     
     
@@ -307,14 +307,14 @@ deposition_interface <- function(particle_sizes_dm, mean_particle_size_dm, sd_pa
     breath_t_exp <- (1-breath_fr_in)*(1/breath_f_br)   # min
     
     # Formulas - inertial impaction
-    Cd <- 1 + (lamda/particle_sizes_m)*(2.514 + 0.8*exp(-0.55*(particle_sizes_m/lamda)))
+    Cd <- 1 + (lamda/particle_diameters_m)*(2.514 + 0.8*exp(-0.55*(particle_diameters_m/lamda)))
     
     # Flow rate (inspiratory and expiratory)
     Q_in <- (breath_V_T/breath_t_in)/1000     # L/min
     Q_exp <- (breath_V_T/breath_t_exp)/1000   # L/min
     
     # Brownian diffusion coefficient
-    Dmol <- ((k*T*Cd)/(3*pi*ne*particle_sizes_m)) # (m^2)/s
+    Dmol <- ((k*T*Cd)/(3*pi*ne*particle_diameters_m)) # (m^2)/s
     Dmol_cm2_s <- Dmol*(100^2)
     
     ## Formulas - inertial impaction
@@ -329,7 +329,7 @@ deposition_interface <- function(particle_sizes_dm, mean_particle_size_dm, sd_pa
     theta <- L/(4*D)
     
     ## Formulas - Gravitational sedimentation
-    vg   <- (po*((particle_sizes_m^2)*g*Cd)/(18*ne))                     # Gravitational settling velocity of a particle
+    vg   <- (po*((particle_diameters_m^2)*g*Cd)/(18*ne))                     # Gravitational settling velocity of a particle
     
     t_i_in    <- V/N/Q_in_gen_i # [s]
     t_i_exp    <- V/N/Q_exp_gen_i # [s]
@@ -337,8 +337,8 @@ deposition_interface <- function(particle_sizes_dm, mean_particle_size_dm, sd_pa
     
     
     ## Extrathoracic deposition
-    oral_in  <- 1 - exp(-0.000278*Q_in *(particle_sizes_m*1e6)^2 - 20.4*(Dmol_cm2_s)^0.66*Q_in ^(-0.31))
-    oral_exp <- 1 - exp(-0.000278*Q_exp*(particle_sizes_m*1e6)^2 - 20.4*(Dmol_cm2_s)^0.66*Q_exp^(-0.31))
+    oral_in  <- 1 - exp(-0.000278*Q_in *(particle_diameters_m*1e6)^2 - 20.4*(Dmol_cm2_s)^0.66*Q_in ^(-0.31))
+    oral_exp <- 1 - exp(-0.000278*Q_exp*(particle_diameters_m*1e6)^2 - 20.4*(Dmol_cm2_s)^0.66*Q_exp^(-0.31))
     
     # print(oral_in)
     # print(oral_exp)
@@ -348,13 +348,13 @@ deposition_interface <- function(particle_sizes_dm, mean_particle_size_dm, sd_pa
     for(j in 1:numSizes){
         for (i in 1:numGens) {
             r_i   <- D_m[i]/2  # radius of tube
-            r_i_p <- particle_sizes_m[j]/2   # radius of particle
+            r_i_p <- particle_diameters_m[j]/2   # radius of particle
             
             
             
             ## Inertial impaction
-            stk_in[i,j] <- po*(particle_sizes_m[j]^2)*v_in_gen_i[i]*Cd[j]/(9*ne*D_m[i])     # With cunningham, Zhang et al. 1997
-            stk_exp[i,j] <- po*(particle_sizes_m[j]^2)*v_exp_gen_i[i]*Cd[j]/(9*ne*D_m[i])   # With cunningham, Zhang et al. 1997
+            stk_in[i,j] <- po*(particle_diameters_m[j]^2)*v_in_gen_i[i]*Cd[j]/(9*ne*D_m[i])     # With cunningham, Zhang et al. 1997
+            stk_exp[i,j] <- po*(particle_diameters_m[j]^2)*v_exp_gen_i[i]*Cd[j]/(9*ne*D_m[i])   # With cunningham, Zhang et al. 1997
             
             IMP_in[i,j] <- 0.768*theta[i]*stk_in[i,j]                       
             IMP_exp[i,j] <- 0.768*theta[i]*stk_exp[i,j]
@@ -517,10 +517,10 @@ deposition_interface <- function(particle_sizes_dm, mean_particle_size_dm, sd_pa
     
     # Calculate proportion of particles based on radius (in dm)     # NOTE: Boger did this in decimetres
     if (log_flag) {
-        proportion_particles <- dlnorm(particle_radius_dm, meanlog=mean_particle_size_dm, sdlog = sd_particle_size_dm)  
+        proportion_particles <- dlnorm(particle_radius_dm, meanlog=mean_particle_diameter_dm, sdlog = sd_particle_diameter_dm)  
         print("Note: a log-normal distribution has not yet been tested.")
     } else {
-        proportion_particles <- dnorm(particle_radius_dm, mean=mean_particle_size_dm, sd = sd_particle_size_dm)    
+        proportion_particles <- dnorm(particle_radius_dm, mean=mean_particle_diameter_dm, sd = sd_particle_diameter_dm)    
     }
     
     # calculate mass of drug in each bin
@@ -536,7 +536,7 @@ deposition_interface <- function(particle_sizes_dm, mean_particle_size_dm, sd_pa
     add_up_r3 <- 0
     for (gen in 1:nrow(pdf_particles)) {
         for (radius in 1:ncol(pdf_particles)) {
-            add_up_r3 <- add_up_r3 + pdf_particles[gen,radius]*(particle_sizes_dm[radius]^3)
+            add_up_r3 <- add_up_r3 + pdf_particles[gen,radius]*(particle_diameters_dm[radius]^3)
         }
     }
     total_volume <- (4/3)*pi*add_up_r3
