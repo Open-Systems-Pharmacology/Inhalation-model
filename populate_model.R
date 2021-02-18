@@ -3,7 +3,6 @@
 # File name :       populate_model.R
 # Author :          Moriah Pellowe
 # Date created :    September 10, 2020
-# Updated :         February 9, 2020
 #
 # This script will:
 #   - calculate the deposition fractions in R
@@ -19,7 +18,7 @@
 #
 ####################
 
-populate_model <- function(pkml_file, molecule_name, particle_diameters_dm, mean_particle_diameters_dm, sd_particle_diameters_dm, logScale = FALSE,
+populate_model <- function(pkml_file, molecule_name, particle_diameters_dm, mean_particle_radius_dm, sd_particle_radius_dm, logScale = FALSE,
                            breathing_frequency = 15, fraction_inspiratory = 0.5, breath_hold_time_sec = 0,
                            delay_volume_mL = 0, tidal_volume_mL = 1000, bolus_volume_mL = 1000) {
     
@@ -32,8 +31,8 @@ populate_model <- function(pkml_file, molecule_name, particle_diameters_dm, mean
     
     ### PARAMETERS: Define arguments for deposition function ###
     # particle_diameters_dm <- c(2.1e-5)      #c(1.35e-5, 2.1e-5, 2.85e-5)    #c(4e-5, 1e-4, 1.6e-4)
-    # mean_particle_diameters_dm <- 2.1e-5    #1e-4
-    # sd_particle_diameters_dm <- 0.75e-5     #3e-5
+    # mean_particle_radius_dm <- 2.1e-5    #1e-4
+    # sd_particle_radius_dm <- 0.75e-5     #3e-5
     # logScale <- FALSE
     # molecule_name <- "Salbutamol"
     
@@ -44,7 +43,7 @@ populate_model <- function(pkml_file, molecule_name, particle_diameters_dm, mean
     drug_density_kg_m3 <- density_kg_dm3$value*1000
     
     # calculate deposition fractions
-    deposition_output <- deposition_interface(particle_diameters_dm, mean_particle_diameters_dm, sd_particle_diameters_dm, drug_density_kg_m3, logScale,
+    deposition_output <- deposition_interface(particle_diameters_dm, mean_particle_radius_dm, sd_particle_radius_dm, drug_density_kg_m3, logScale,
                                               breathing_frequency, fraction_inspiratory, breath_hold_time_sec, delay_volume_mL, tidal_volume_mL, bolus_volume_mL)
     # reduce amount deposited by fraction deposited in lung
     # should it also include ET region? or just lung? depends on assumptions and what F_inh represents
@@ -57,7 +56,8 @@ populate_model <- function(pkml_file, molecule_name, particle_diameters_dm, mean
               toString(bin), "|Particle radius (at t=0)", sep="")
         paths <- c(paths, temp)
     }
-    setParameterValuesByPath(paths, particle_diameters_dm, sim)
+	particle_radius_dm <- particle_diameters_dm/2
+    setParameterValuesByPath(paths, particle_radius_dm, sim)
     
     # set Number_Of_Particles_Factor
     paths <- NULL
@@ -143,7 +143,7 @@ populate_model <- function(pkml_file, molecule_name, particle_diameters_dm, mean
 #
 #####
 
-deposition_interface <- function(particle_diameters_dm, mean_particle_diameter_dm, sd_particle_diameter_dm, drug_density_kg_m3, log_flag=FALSE,
+deposition_interface <- function(particle_diameters_dm, mean_particle_radius_dm, sd_particle_radius_dm, drug_density_kg_m3, log_flag=FALSE,
                                  breathing_frequency, fraction_inspiratory, breath_hold_time_sec,
                                  delay_volume_mL, tidal_volume_mL, bolus_volume_mL){
     library(pracma)
@@ -517,10 +517,10 @@ deposition_interface <- function(particle_diameters_dm, mean_particle_diameter_d
     
     # Calculate proportion of particles based on radius (in dm)     # NOTE: Boger did this in decimetres
     if (log_flag) {
-        proportion_particles <- dlnorm(particle_radius_dm, meanlog=mean_particle_diameter_dm, sdlog = sd_particle_diameter_dm)  
+        proportion_particles <- dlnorm(particle_radius_dm, meanlog=mean_particle_radius_dm, sdlog = sd_particle_radius_dm)  
         print("Note: a log-normal distribution has not yet been tested.")
     } else {
-        proportion_particles <- dnorm(particle_radius_dm, mean=mean_particle_diameter_dm, sd = sd_particle_diameter_dm)    
+        proportion_particles <- dnorm(particle_radius_dm, mean=mean_particle_radius_dm, sd = sd_particle_radius_dm)    
     }
     
     # calculate mass of drug in each bin
@@ -530,13 +530,13 @@ deposition_interface <- function(particle_diameters_dm, mean_particle_diameter_d
         pdf_particles[gen,] <- total_deposition[gen,]*proportion_particles
     }
     
-    ## MoBi
+    ## MoBi - see email from Juri Solodenko (AW: Question about dissolution in MoBi) from May 1, 2020
     # calculate total volume of all particles, NOTE: volume will be in L
     total_volume_ <- 0
     add_up_r3 <- 0
     for (gen in 1:nrow(pdf_particles)) {
         for (radius in 1:ncol(pdf_particles)) {
-            add_up_r3 <- add_up_r3 + pdf_particles[gen,radius]*(particle_diameters_dm[radius]^3)
+            add_up_r3 <- add_up_r3 + pdf_particles[gen,radius]*(particle_radius_dm[radius]^3)
         }
     }
     total_volume <- (4/3)*pi*add_up_r3
