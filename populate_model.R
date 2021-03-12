@@ -18,7 +18,8 @@
 #
 ####################
 
-populate_model <- function(pkml_file, molecule_name, particle_diameters_dm, mean_particle_radius_dm, sd_particle_radius_dm, logScale = FALSE,
+populate_model <- function(pkml_file, molecule_name, particle_diameters_dm, mean_particle_radius_dm, sd_particle_radius_dm,
+						   oral_bioavailability = 1, lung_bioavailability = 1, logScale = FALSE,
                            breathing_frequency = 15, fraction_inspiratory = 0.5, breath_hold_time_sec = 0,
                            delay_volume_mL = 0, tidal_volume_mL = 1000, bolus_volume_mL = 1000) {
     
@@ -49,6 +50,10 @@ populate_model <- function(pkml_file, molecule_name, particle_diameters_dm, mean
     # should it also include ET region? or just lung? depends on assumptions and what F_inh represents
     #deposition_output$distribution_across_gens[1:25,] <- deposition_output$distribution_across_gens[2:25,]*fraction_deposited_in_lung
     
+	# adjust the deposition fractions by oral and lung bioavailabilities
+	deposition_output$distribution_across_gens[1,] <- deposition_output$distribution_across_gens[1,]*oral_bioavailability
+	deposition_output$distribution_across_gens[2:dim(deposition_output$distribution_across_gens)[1],] <- deposition_output$distribution_across_gens[2:dim(deposition_output$distribution_across_gens)[1],]*lung_bioavailability
+	
     # set particle radii
     paths <- NULL
     for (bin in 1:numberOfBins) {
