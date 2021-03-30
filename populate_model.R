@@ -20,7 +20,7 @@
 
 populate_model <- function(pkml_file, molecule_name, particle_diameters_dm, mean_particle_radius_dm, sd_particle_radius_dm,
 						   oral_bioavailability = 1, lung_bioavailability = 1, logScale = FALSE,
-                           breathing_frequency = 15, fraction_inspiratory = 0.5, breath_hold_time_sec = 0,
+                           breathing_frequency_N_min = 15, fraction_inspiratory = 0.5, breath_hold_time_sec = 0,
                            delay_volume_mL = 0, tidal_volume_mL = 1000, bolus_volume_mL = 1000) {
     
     # Load in libraries and scripts
@@ -45,7 +45,7 @@ populate_model <- function(pkml_file, molecule_name, particle_diameters_dm, mean
     
     # calculate deposition fractions
     deposition_output <- deposition_interface(particle_diameters_dm, mean_particle_radius_dm, sd_particle_radius_dm, drug_density_kg_m3, logScale,
-                                              breathing_frequency, fraction_inspiratory, breath_hold_time_sec, delay_volume_mL, tidal_volume_mL, bolus_volume_mL)
+                                              breathing_frequency_N_min, fraction_inspiratory, breath_hold_time_sec, delay_volume_mL, tidal_volume_mL, bolus_volume_mL)
     # reduce amount deposited by fraction deposited in lung
     # should it also include ET region? or just lung? depends on assumptions and what F_inh represents
     #deposition_output$distribution_across_gens[1:25,] <- deposition_output$distribution_across_gens[2:25,]*fraction_deposited_in_lung
@@ -149,7 +149,7 @@ populate_model <- function(pkml_file, molecule_name, particle_diameters_dm, mean
 #####
 
 deposition_interface <- function(particle_diameters_dm, mean_particle_radius_dm, sd_particle_radius_dm, drug_density_kg_m3, log_flag=FALSE,
-                                 breathing_frequency, fraction_inspiratory, breath_hold_time_sec,
+                                 breathing_frequency_N_min, fraction_inspiratory, breath_hold_time_sec,
                                  delay_volume_mL, tidal_volume_mL, bolus_volume_mL){
     library(pracma)
     
@@ -158,7 +158,7 @@ deposition_interface <- function(particle_diameters_dm, mean_particle_radius_dm,
     #sd_particle_diameter <- 6e-7
     
     ## Parameters
-    breath_f_br <- breathing_frequency       # breathing frequency, [1/min]
+    breath_f_br <- breathing_frequency_N_min       # breathing frequency, [1/min]
     breath_fr_in <- fraction_inspiratory     # fraction of breath as inspiratory
     breath_t_b <- breath_hold_time_sec       # breath-hold time [s]
     
