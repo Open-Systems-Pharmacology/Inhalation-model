@@ -51,8 +51,12 @@ populate_model <- function(pkml_file, molecule_name, particle_diameters_dm, mean
     #deposition_output$distribution_across_gens[1:25,] <- deposition_output$distribution_across_gens[2:25,]*fraction_deposited_in_lung
     
 	# adjust the deposition fractions by oral and lung bioavailabilities
-	deposition_output$distribution_across_gens[1,] <- deposition_output$distribution_across_gens[1,]*oral_bioavailability
+	deposition_output$distribution_across_gens[1,] <- deposition_output$distribution_across_gens[1,]
 	deposition_output$distribution_across_gens[2:dim(deposition_output$distribution_across_gens)[1],] <- deposition_output$distribution_across_gens[2:dim(deposition_output$distribution_across_gens)[1],]*lung_bioavailability
+	
+	# set oral bioavailability
+	paths <- "Organism|ExtrathoracicRegion|Oral bioavailability - F_oral"
+	setParameterValuesByPath(paths, oral_bioavailability, sim)
 	
     # set particle radii
     paths <- NULL
