@@ -53,8 +53,11 @@ custom_deposition <- function(pkml_file, molecule_name, particle_diameters_dm, m
     
     # Calculate proportion of particles based on radius (in dm)     # NOTE: Boger did this in decimetres
     if (logScale) {
-        proportion_particles <- dlnorm(particle_radius_dm, meanlog=mean_particle_radius_dm, sdlog = sd_particle_radius_dm)  
-        print("Note: a log-normal distribution has not yet been tested.")
+        # convert geometric mean and geometric standard deviation to meanlog and sdlog as used in dlnorm
+        mu <- log(mean_particle_radius_dm)
+        sdev <- sqrt(log(sd_particle_radius_dm)^2)
+        proportion_particles <- dlnorm(particle_radius_dm, meanlog = mu, sdlog = sdev)  
+        print("Note: Since logScale==TRUE, the mean is interpreted as the geometric mean and the sd as the geometric standard deviation.")
     } else {
         proportion_particles <- dnorm(particle_radius_dm, mean=mean_particle_radius_dm, sd = sd_particle_radius_dm)    
     }
