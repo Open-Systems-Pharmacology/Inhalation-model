@@ -15,14 +15,15 @@ Simulation of the model returns:
 
 | File name                            | Description                                                                                                                                                                                                                                                                                                                     |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Inhalation_model_user_guide.pdf         | Includes:<br>1. Introduction to the model and model details<br>2. A description of the model implementation in Mobi<br>3. Step-by-step tutorial of a basic inhalation simulation |
-| inhalation_model_two_compt_1_bin.mbp3   | MoBi project template containing the inhalation model connected to a two-compartment model |
-| populate_model.R                        | R script that is used to calculate deposition fractions based on empirical equations (Yu & Diu, 1982) |
-| custom_deposition.R                     | R script that is used to specify the deposition fractions directly |
-| configure_inhalation_parameters.R       | Template to guide the use of the populate_model.R and custom_deposition.R files. It is currently configured for the ciprofloxacin which is used in the tutorial within the user guide |
-| ParticleBin_1.pkml                      | Template for a single particle bin. This file can be used to add additional particle bins in the case of a polydisperse formulation |
-| Standard_Molecule.pkml                  | Template for a generic molecule building block. This file is used to load the parameter "Solubility in epithelial lining fluid" |
-| stass_2017_ciprofloxacin_inhaled.pkml   | Building block that contains Stass et al (2017) data used in the tutorial within the user guide |
+| Inhalation_model_user_guide.pdf         		| Includes:<br>1. Introduction to the model and model details<br>2. A description of the model implementation in Mobi<br>3. Step-by-step tutorial of a basic inhalation simulation |
+| Inhalation_model_structure_evaluation.pdf		| Slide deck demonstrating the use of the inhalation model to capture the observed behaviour of four molecules of varying solubilities. |
+| inhalation_model_two_compt_1_bin.mbp3   		| MoBi project template containing the inhalation model connected to a two-compartment model |
+| populate_model.R                        		| R script that is used to calculate deposition fractions based on empirical equations (Yu & Diu, 1982) |
+| custom_deposition.R                     		| R script that is used to specify the deposition fractions directly |
+| configure_inhalation_parameters.R       		| Template to guide the use of the populate_model.R and custom_deposition.R files. It is currently configured for the ciprofloxacin which is used in the tutorial within the user guide |
+| ParticleBin_1.pkml                      		| Template for a single particle bin. This file can be used to add additional particle bins in the case of a polydisperse formulation |
+| Standard_Molecule.pkml                  		| Template for a generic molecule building block. This file is used to load the parameter "Solubility in epithelial lining fluid" |
+| stass_2017_ciprofloxacin_inhaled.pkml   		| Building block that contains Stass et al (2017) data used in the tutorial within the user guide |
 
 
 ## References
