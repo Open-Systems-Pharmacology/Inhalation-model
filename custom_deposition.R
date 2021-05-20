@@ -10,8 +10,10 @@
 #
 #####
 
-custom_deposition <- function(pkml_file, molecule_name, particle_diameters_dm, mean_particle_radius_dm, sd_particle_radius,
-                              deposition_fractions, oral_bioavailability = 1, lung_bioavailability = 1, logScale = FALSE) {
+custom_deposition <- function(pkml_file, molecule_name, particle_diameters_dm, mean_particle_radius_dm, sd_particle_radius_dm,
+                              deposition_fractions, 
+                              oral_bioavailability = 1, lung_bioavailability = 1, device_bioavailability = 1,
+                              logScale = FALSE) {
     
     # load in libraries
     library(ospsuite)
@@ -31,9 +33,15 @@ custom_deposition <- function(pkml_file, molecule_name, particle_diameters_dm, m
     # read in distribution
     distribution_across_gens <- deposition_fractions
     
-    # adjust the deposition fractions by oral and lung bioavailabilities
-    distribution_across_gens[1,] <- distribution_across_gens[1,]
-    distribution_across_gens[2:dim(distribution_across_gens)[1],] <- distribution_across_gens[2:dim(distribution_across_gens)[1],]*lung_bioavailability
+    # adjust the deposition fractions
+    # note that the oral bioavailability is changed within the MoBi simulation so it is not accounted for here
+    distribution_across_gens[1,] <- device_bioavailability*distribution_across_gens[1,]
+    
+    # absolute bioavailability after inhaled administration with oral charcoal 
+    #   = fraction output by device * fraction of drug deposited in lung * lung bioavailability
+    # i.e. F_inh,charcoal = F_device * df_lung * F_lung
+    distribution_across_gens[2:dim(distribution_across_gens)[1],] <- 
+        device_bioavailability*distribution_across_gens[2:dim(distribution_across_gens)[1],]*lung_bioavailability
     
     # set oral bioavailability
     paths <- "Organism|ExtrathoracicRegion|Oral bioavailability - F_oral"
