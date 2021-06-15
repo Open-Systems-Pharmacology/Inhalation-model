@@ -44,7 +44,7 @@ custom_deposition <- function(pkml_file, molecule_name, particle_diameters_dm, m
         device_bioavailability*distribution_across_gens[2:dim(distribution_across_gens)[1],]*lung_bioavailability
     
     # set oral bioavailability
-    paths <- "InhalationModel|ExtrathoracicRegion|Oral bioavailability - F_oral"
+    paths <- "Organism|ExtrathoracicRegion|Oral bioavailability - F_oral"
     setParameterValuesByPath(paths, oral_bioavailability, sim)
     
     # set particle radii
